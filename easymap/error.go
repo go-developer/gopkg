@@ -26,3 +26,12 @@ func keyNotFound(key interface{}) error {
 func convertFail(err error) error {
 	return errors.Wrapf(err, "数据类型转换失败")
 }
+
+// segmentError ...
+//
+// Author : go_developer@163.com<张德满>
+//
+// Date : 1:44 下午 2021/2/24
+func segmentError() error {
+	return errors.New("segment需要大于0")
+}
