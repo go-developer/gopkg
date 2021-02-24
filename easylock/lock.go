@@ -9,6 +9,11 @@ package easylock
 
 import "sync"
 
+// NewLock获取普通锁实例,因为只有一把锁,flag没有意义,传空即可
+//
+// Author : go_developer@163.com<张德满>
+//
+// Date : 10:42 下午 2021/2/24
 func NewLock() EasyLock {
 	return &lock{
 		sc: &sync.RWMutex{},
@@ -19,22 +24,22 @@ type lock struct {
 	sc *sync.RWMutex
 }
 
-func (l *lock) Lock() error {
+func (l *lock) Lock(flag string) error {
 	l.sc.Lock()
 	return nil
 }
 
-func (l *lock) Unlock() error {
+func (l *lock) Unlock(flag string) error {
 	l.sc.Unlock()
 	return nil
 }
 
-func (l *lock) RLock() error {
+func (l *lock) RLock(flag string) error {
 	l.sc.RLock()
 	return nil
 }
 
-func (l *lock) RUnlock() error {
+func (l *lock) RUnlock(flag string) error {
 	l.sc.Unlock()
 	return nil
 }

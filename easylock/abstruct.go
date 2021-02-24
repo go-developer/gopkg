@@ -8,8 +8,8 @@
 package easylock
 
 type EasyLock interface {
-	Lock() error
-	Unlock() error
-	RLock() error
-	RUnlock() error
+	Lock(flag string) error
+	Unlock(flag string) error
+	RLock(flag string) error
+	RUnlock(flag string) error
 }
