@@ -8,9 +8,7 @@
 package easymap
 
 import (
-	"fmt"
-
-	"github.com/spaolacci/murmur3"
+	"github.com/go-developer/gopkg/util"
 )
 
 // NewSegmentSync 获取SegmentSync实例
@@ -38,79 +36,79 @@ type segmentSync struct {
 }
 
 func (s *segmentSync) Get(key interface{}) (interface{}, error) {
-	return s.dataTable[s.getSegment(key)].Get(key)
+	return s.dataTable[util.GetHashIDMod(key, s.segment)].Get(key)
 }
 
 func (s *segmentSync) GetWithReceiver(key interface{}, dest interface{}) error {
-	return s.dataTable[s.getSegment(key)].GetWithReceiver(key, dest)
+	return s.dataTable[util.GetHashIDMod(key, s.segment)].GetWithReceiver(key, dest)
 }
 
 func (s *segmentSync) GetUint(key interface{}) (uint, error) {
-	return s.dataTable[s.getSegment(key)].GetUint(key)
+	return s.dataTable[util.GetHashIDMod(key, s.segment)].GetUint(key)
 }
 
 func (s *segmentSync) GetUint8(key interface{}) (uint8, error) {
-	return s.dataTable[s.getSegment(key)].GetUint8(key)
+	return s.dataTable[util.GetHashIDMod(key, s.segment)].GetUint8(key)
 }
 
 func (s *segmentSync) GetUint16(key interface{}) (uint16, error) {
-	return s.dataTable[s.getSegment(key)].GetUint16(key)
+	return s.dataTable[util.GetHashIDMod(key, s.segment)].GetUint16(key)
 }
 
 func (s *segmentSync) GetUint32(key interface{}) (uint32, error) {
-	return s.dataTable[s.getSegment(key)].GetUint32(key)
+	return s.dataTable[util.GetHashIDMod(key, s.segment)].GetUint32(key)
 }
 
 func (s *segmentSync) GetUint64(key interface{}) (uint64, error) {
-	return s.dataTable[s.getSegment(key)].GetUint64(key)
+	return s.dataTable[util.GetHashIDMod(key, s.segment)].GetUint64(key)
 }
 
 func (s *segmentSync) GetInt(key interface{}) (int, error) {
-	return s.dataTable[s.getSegment(key)].GetInt(key)
+	return s.dataTable[util.GetHashIDMod(key, s.segment)].GetInt(key)
 }
 
 func (s *segmentSync) GetInt8(key interface{}) (int8, error) {
-	return s.dataTable[s.getSegment(key)].GetInt8(key)
+	return s.dataTable[util.GetHashIDMod(key, s.segment)].GetInt8(key)
 }
 
 func (s *segmentSync) GetInt16(key interface{}) (int16, error) {
-	return s.dataTable[s.getSegment(key)].GetInt16(key)
+	return s.dataTable[util.GetHashIDMod(key, s.segment)].GetInt16(key)
 }
 
 func (s *segmentSync) GetInt32(key interface{}) (int32, error) {
-	return s.dataTable[s.getSegment(key)].GetInt32(key)
+	return s.dataTable[util.GetHashIDMod(key, s.segment)].GetInt32(key)
 }
 
 func (s *segmentSync) GetInt64(key interface{}) (int64, error) {
-	return s.dataTable[s.getSegment(key)].GetInt64(key)
+	return s.dataTable[util.GetHashIDMod(key, s.segment)].GetInt64(key)
 }
 
 func (s *segmentSync) GetFloat32(key interface{}) (float32, error) {
-	return s.dataTable[s.getSegment(key)].GetFloat32(key)
+	return s.dataTable[util.GetHashIDMod(key, s.segment)].GetFloat32(key)
 }
 
 func (s *segmentSync) GetFloat64(key interface{}) (float64, error) {
-	return s.dataTable[s.getSegment(key)].GetFloat64(key)
+	return s.dataTable[util.GetHashIDMod(key, s.segment)].GetFloat64(key)
 }
 
 func (s *segmentSync) GetBool(key interface{}) (bool, error) {
-	return s.dataTable[s.getSegment(key)].GetBool(key)
+	return s.dataTable[util.GetHashIDMod(key, s.segment)].GetBool(key)
 }
 
 func (s *segmentSync) GetString(key interface{}) (string, error) {
-	return s.dataTable[s.getSegment(key)].GetString(key)
+	return s.dataTable[util.GetHashIDMod(key, s.segment)].GetString(key)
 }
 
 func (s *segmentSync) Set(key interface{}, value interface{}) {
-	s.dataTable[s.getSegment(key)].Set(key, value)
+	s.dataTable[util.GetHashIDMod(key, s.segment)].Set(key, value)
 }
 
 func (s *segmentSync) Del(key interface{}) {
-	s.dataTable[s.getSegment(key)].Del(key)
+	s.dataTable[util.GetHashIDMod(key, s.segment)].Del(key)
 }
 
 func (s *segmentSync) Exist(key interface{}) bool {
-	return s.dataTable[s.getSegment(key)].Exist(key)
+	return s.dataTable[util.GetHashIDMod(key, s.segment)].Exist(key)
 }
 
 func (s *segmentSync) GetAll() map[interface{}]interface{} {
@@ -121,8 +119,4 @@ func (s *segmentSync) GetAll() map[interface{}]interface{} {
 		}
 	}
 	return result
-}
-
-func (s *segmentSync) getSegment(key interface{}) int {
-	return int(murmur3.Sum64([]byte(fmt.Sprintf("%v", key))) % uint64(s.segment))
 }
