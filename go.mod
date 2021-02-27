@@ -9,5 +9,6 @@ require (
 	github.com/lestrrat-go/strftime v1.0.4 // indirect
 	github.com/pkg/errors v0.9.1
 	github.com/spaolacci/murmur3 v1.1.0
+	github.com/stretchr/testify v1.7.0
 	go.uber.org/zap v1.16.0
 )

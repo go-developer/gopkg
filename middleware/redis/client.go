@@ -8,6 +8,7 @@
 package redis
 
 import (
+	"strings"
 	"time"
 
 	"github.com/go-developer/gopkg/convert"
@@ -16,6 +17,30 @@ import (
 	redisInstance "github.com/go-redis/redis/v8"
 	"go.uber.org/zap"
 )
+
+// defaultParseError ...
+//
+// Author : go_developer@163.com<张德满>
+//
+// Date : 10:59 下午 2021/2/27
+func defaultParseError(err error) error {
+	if nil == err {
+		return nil
+	}
+	errMsg := err.Error()
+	if errMsg == "nil" || errMsg == "<nil>" {
+		return nil
+	}
+	strArr := strings.Split(errMsg, ":")
+	if len(strArr) != 2 {
+		return err
+	}
+	msg := strings.ToLower(strings.TrimSpace(strArr[1]))
+	if msg == "nil" || msg == "<nil>" {
+		return nil
+	}
+	return err
+}
 
 // Options 连接选项,百分之百兼容第三方包的选项
 //
@@ -41,10 +66,14 @@ type RealClient struct {
 // Author : go_developer@163.com<张德满>
 //
 // Date : 5:05 下午 2021/2/27
-func NewClient(config map[string]Options) (ClientInterface, error) {
+func NewClient(config map[string]Options, parseErrorFunc func(err error) error) (ClientInterface, error) {
 	c := &Client{
-		instanceTable: make(map[string]*RealClient),
-		confTable:     config,
+		instanceTable:  make(map[string]*RealClient),
+		confTable:      config,
+		parseErrorFunc: parseErrorFunc,
+	}
+	if nil == c.parseErrorFunc {
+		c.parseErrorFunc = defaultParseError
 	}
 	return c, c.init()
 }
@@ -55,8 +84,9 @@ func NewClient(config map[string]Options) (ClientInterface, error) {
 //
 // Date : 4:52 下午 2021/2/27
 type Client struct {
-	instanceTable map[string]*RealClient // redis 实例
-	confTable     map[string]Options     // redis 配置
+	instanceTable  map[string]*RealClient // redis 实例
+	confTable      map[string]Options     // redis 配置
+	parseErrorFunc func(err error) error  // 解析err的function,解析执行结果是否为失败,有的场景,执行成功,返回 redis:nil / redis:<nil>
 }
 
 // init 初始化redis连接
@@ -175,7 +205,7 @@ func (c *Client) CommandProxy(ctx *Context, flag string, cmd string, param ...in
 	startTime := time.Now().Unix()
 	cmdResult := realClient.Instance.Do(ctx.Ctx, redisCmd...)
 	go c.log(ctx, realClient, cmdResult, startTime, time.Now().UnixNano())
-	return cmdResult.Val(), cmdResult.Err()
+	return cmdResult.Val(), c.parseErrorFunc(cmdResult.Err())
 }
 
 // CommandProxyWithReceiver 执行命令,并解析结果
@@ -199,6 +229,11 @@ func (c *Client) CommandProxyWithReceiver(ctx *Context, flag string, receiver in
 	return ResultConvertFail(convert.ConvertAssign(receiver, result))
 }
 
+// ClientInterface 定义redis client的接口实现,方便单元测试数据mock
+//
+// Author : go_developer@163.com<张德满>
+//
+// Date : 10:49 下午 2021/2/27
 type ClientInterface interface {
 	GetRedisClient(flag string) (*RealClient, error)
 	CommandProxy(ctx *Context, flag string, cmd string, param ...interface{}) (interface{}, error)

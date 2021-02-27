@@ -11,6 +11,8 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/stretchr/testify/assert"
+
 	redisInstance "github.com/go-redis/redis/v8"
 )
 
@@ -35,9 +37,11 @@ func TestCommandProxy(t *testing.T) {
 			},
 			LoggerFieldConfig: nil,
 		},
-	})
+	}, nil)
 	if nil != err {
 		panic(err.Error())
 	}
-	fmt.Println(instance.CommandProxy(nil, "test_redis", "set", "command_proxy", "hello world"))
+	r, cmdErr := instance.CommandProxy(nil, "test_redis", "set", "command_proxy", "hello world")
+	assert.Nil(t, cmdErr, "命令执行成功")
+	assert.Equal(t, "OK", fmt.Sprintf("%v", r))
 }
