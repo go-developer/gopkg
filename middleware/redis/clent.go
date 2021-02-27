@@ -41,7 +41,7 @@ type RealClient struct {
 // Author : go_developer@163.com<张德满>
 //
 // Date : 5:05 下午 2021/2/27
-func NewClient(config map[string]Options) (*Client, error) {
+func NewClient(config map[string]Options) (ClientInterface, error) {
 	c := &Client{
 		instanceTable: make(map[string]*RealClient),
 		confTable:     config,
@@ -164,6 +164,10 @@ func (c *Client) CommandProxy(ctx *Context, flag string, cmd string, param ...in
 	if len(cmd) == 0 {
 		return nil, EmptyCmd()
 	}
+
+	if nil == ctx {
+		ctx = NewContext(flag)
+	}
 	if realClient, err = c.GetRedisClient(ctx.Flag); nil != err {
 		return nil, err
 	}
@@ -195,23 +199,8 @@ func (c *Client) CommandProxyWithReceiver(ctx *Context, flag string, receiver in
 	return ResultConvertFail(convert.ConvertAssign(receiver, result))
 }
 
-// Set set 命令
-//
-// Author : go_developer@163.com<张德满>
-//
-// Date : 8:18 下午 2021/2/27
-func (c *Client) Set(ctx *Context, key string, value interface{}, expiration time.Duration) error {
-	var (
-		realClient *RealClient
-		err        error
-		statusCmd  *redisInstance.StatusCmd
-	)
-	if realClient, err = c.GetRedisClient(ctx.Flag); nil != err {
-		return err
-	}
-
-	startTime := time.Now().UnixNano()
-	statusCmd = realClient.Instance.Set(ctx.Ctx, key, value, expiration)
-	go c.log(ctx, realClient, statusCmd, startTime, time.Now().UnixNano())
-	return statusCmd.Err()
+type ClientInterface interface {
+	GetRedisClient(flag string) (*RealClient, error)
+	CommandProxy(ctx *Context, flag string, cmd string, param ...interface{}) (interface{}, error)
+	CommandProxyWithReceiver(ctx *Context, flag string, receiver interface{}, cmd string, param ...interface{}) error
 }

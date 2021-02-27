@@ -71,7 +71,7 @@ func NewContext(flag string, of ...SetContextFunc) *Context {
 	// requestID 填充
 	if len(ctx.RequestID) == 0 {
 		// 先从 gin 读
-		if nil != ctx.Ctx {
+		if nil != ctx.GinCtx {
 			ctx.RequestID = ctx.GinCtx.GetString(ctx.RequestIDField)
 		}
 		// 再从extra读取
