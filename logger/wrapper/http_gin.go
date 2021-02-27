@@ -16,12 +16,12 @@ import (
 	"go.uber.org/zap/zapcore"
 )
 
-// NewGinWrapperLogger 使用gin框架记录日志
+// NewGinLogger 使用gin框架记录日志
 //
 // Author : go_developer@163.com<张德满>
 //
 // Date : 3:45 下午 2021/1/3
-func NewGinWrapperLogger(loggerLevel zapcore.Level, consoleOutput bool, encoder zapcore.Encoder, splitConfig *logger.RotateLogConfig, extractFieldList []string) (*GinWrapper, error) {
+func NewGinLogger(loggerLevel zapcore.Level, consoleOutput bool, encoder zapcore.Encoder, splitConfig *logger.RotateLogConfig, extractFieldList []string) (*Gin, error) {
 	var (
 		err error
 		l   *zap.Logger
@@ -30,18 +30,18 @@ func NewGinWrapperLogger(loggerLevel zapcore.Level, consoleOutput bool, encoder 
 		return nil, err
 	}
 
-	return &GinWrapper{
+	return &Gin{
 		loggerInstance:   l,
 		extractFieldList: extractFieldList,
 	}, nil
 }
 
-// GinWrapper 包装gin实例
+// Gin 包装gin实例
 //
 // Author : go_developer@163.com<张德满>
 //
 // Date : 3:59 下午 2021/1/3
-type GinWrapper struct {
+type Gin struct {
 	loggerInstance   *zap.Logger // zap 的日志实例
 	extractFieldList []string    // 从gin中抽取的字段
 }
@@ -51,7 +51,7 @@ type GinWrapper struct {
 // Author : go_developer@163.com<张德满>
 //
 // Date : 4:13 下午 2021/1/3
-func (gw *GinWrapper) formatFieldList(ginCtx *gin.Context, inputFieldList []zap.Field) []zap.Field {
+func (gw *Gin) formatFieldList(ginCtx *gin.Context, inputFieldList []zap.Field) []zap.Field {
 	if nil == inputFieldList {
 		inputFieldList = make([]zap.Field, 0)
 	}
@@ -72,7 +72,7 @@ func (gw *GinWrapper) formatFieldList(ginCtx *gin.Context, inputFieldList []zap.
 // Author : go_developer@163.com<张德满>
 //
 // Date : 4:14 下午 2021/1/3
-func (gw *GinWrapper) Debug(ginCtx *gin.Context, msg string, field ...zap.Field) {
+func (gw *Gin) Debug(ginCtx *gin.Context, msg string, field ...zap.Field) {
 	fieldList := gw.formatFieldList(ginCtx, field)
 	gw.loggerInstance.Debug(msg, fieldList...)
 }
@@ -82,7 +82,7 @@ func (gw *GinWrapper) Debug(ginCtx *gin.Context, msg string, field ...zap.Field)
 // Author : go_developer@163.com<张德满>
 //
 // Date : 4:28 下午 2021/1/3
-func (gw *GinWrapper) Info(ginCtx *gin.Context, msg string, field ...zap.Field) {
+func (gw *Gin) Info(ginCtx *gin.Context, msg string, field ...zap.Field) {
 	fieldList := gw.formatFieldList(ginCtx, field)
 	gw.loggerInstance.Info(msg, fieldList...)
 }
@@ -92,7 +92,7 @@ func (gw *GinWrapper) Info(ginCtx *gin.Context, msg string, field ...zap.Field) 
 // Author : go_developer@163.com<张德满>
 //
 // Date : 4:29 下午 2021/1/3
-func (gw *GinWrapper) Warn(ginCtx *gin.Context, msg string, field ...zap.Field) {
+func (gw *Gin) Warn(ginCtx *gin.Context, msg string, field ...zap.Field) {
 	fieldList := gw.formatFieldList(ginCtx, field)
 	gw.loggerInstance.Warn(msg, fieldList...)
 }
@@ -102,7 +102,7 @@ func (gw *GinWrapper) Warn(ginCtx *gin.Context, msg string, field ...zap.Field) 
 // Author : go_developer@163.com<张德满>
 //
 // Date : 4:29 下午 2021/1/3
-func (gw *GinWrapper) Error(ginCtx *gin.Context, msg string, field ...zap.Field) {
+func (gw *Gin) Error(ginCtx *gin.Context, msg string, field ...zap.Field) {
 	fieldList := gw.formatFieldList(ginCtx, field)
 	gw.loggerInstance.Error(msg, fieldList...)
 }
@@ -112,7 +112,7 @@ func (gw *GinWrapper) Error(ginCtx *gin.Context, msg string, field ...zap.Field)
 // Author : go_developer@163.com<张德满>
 //
 // Date : 4:29 下午 2021/1/3
-func (gw *GinWrapper) Panic(ginCtx *gin.Context, msg string, field ...zap.Field) {
+func (gw *Gin) Panic(ginCtx *gin.Context, msg string, field ...zap.Field) {
 	fieldList := gw.formatFieldList(ginCtx, field)
 	gw.loggerInstance.Panic(msg, fieldList...)
 }
@@ -122,7 +122,7 @@ func (gw *GinWrapper) Panic(ginCtx *gin.Context, msg string, field ...zap.Field)
 // Author : go_developer@163.com<张德满>
 //
 // Date : 4:30 下午 2021/1/3
-func (gw *GinWrapper) DPanic(ginCtx *gin.Context, msg string, field ...zap.Field) {
+func (gw *Gin) DPanic(ginCtx *gin.Context, msg string, field ...zap.Field) {
 	fieldList := gw.formatFieldList(ginCtx, field)
 	gw.loggerInstance.DPanic(msg, fieldList...)
 }
@@ -132,6 +132,6 @@ func (gw *GinWrapper) DPanic(ginCtx *gin.Context, msg string, field ...zap.Field
 // Author : go_developer@163.com<张德满>
 //
 // Date : 2021/01/03 22:56:47
-func (gw *GinWrapper) GetZapLoggerInstance() *zap.Logger {
+func (gw *Gin) GetZapLoggerInstance() *zap.Logger {
 	return gw.loggerInstance
 }
