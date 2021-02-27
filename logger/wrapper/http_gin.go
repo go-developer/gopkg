@@ -42,22 +42,8 @@ func NewGinWrapperLogger(loggerLevel zapcore.Level, consoleOutput bool, encoder 
 //
 // Date : 3:59 下午 2021/1/3
 type GinWrapper struct {
-	loggerInstance   *zap.Logger  // zap 的日志实例
-	extractFieldList []string     // 从gin中抽取的字段
-	ginCtx           *gin.Context // gin 实例
-}
-
-// GetLogger 为每一次请求生成不同的日志实例,包含独立的gin上下文
-//
-// Author : go_developer@163.com<张德满>
-//
-// Date : 4:02 下午 2021/1/3
-func (gw *GinWrapper) GetLogger(ginCtx *gin.Context) *GinWrapper {
-	return &GinWrapper{
-		loggerInstance:   gw.loggerInstance,
-		extractFieldList: gw.extractFieldList,
-		ginCtx:           ginCtx,
-	}
+	loggerInstance   *zap.Logger // zap 的日志实例
+	extractFieldList []string    // 从gin中抽取的字段
 }
 
 // formatFieldList 格式化日志field列表
@@ -65,14 +51,14 @@ func (gw *GinWrapper) GetLogger(ginCtx *gin.Context) *GinWrapper {
 // Author : go_developer@163.com<张德满>
 //
 // Date : 4:13 下午 2021/1/3
-func (gw *GinWrapper) formatFieldList(inputFieldList []zap.Field) []zap.Field {
+func (gw *GinWrapper) formatFieldList(ginCtx *gin.Context, inputFieldList []zap.Field) []zap.Field {
 	if nil == inputFieldList {
 		inputFieldList = make([]zap.Field, 0)
 	}
-	if nil != gw.ginCtx {
+	if nil != ginCtx {
 		// 自动扩充抽取字段,字段不存在的话,忽略掉
 		for _, extractField := range gw.extractFieldList {
-			if v, exist := gw.ginCtx.Get(extractField); exist {
+			if v, exist := ginCtx.Get(extractField); exist {
 				byteData, _ := json.Marshal(v)
 				inputFieldList = append(inputFieldList, zap.String(extractField, string(byteData)))
 			}
@@ -86,8 +72,8 @@ func (gw *GinWrapper) formatFieldList(inputFieldList []zap.Field) []zap.Field {
 // Author : go_developer@163.com<张德满>
 //
 // Date : 4:14 下午 2021/1/3
-func (gw *GinWrapper) Debug(msg string, field ...zap.Field) {
-	fieldList := gw.formatFieldList(field)
+func (gw *GinWrapper) Debug(ginCtx *gin.Context, msg string, field ...zap.Field) {
+	fieldList := gw.formatFieldList(ginCtx, field)
 	gw.loggerInstance.Debug(msg, fieldList...)
 }
 
@@ -96,8 +82,8 @@ func (gw *GinWrapper) Debug(msg string, field ...zap.Field) {
 // Author : go_developer@163.com<张德满>
 //
 // Date : 4:28 下午 2021/1/3
-func (gw *GinWrapper) Info(msg string, field ...zap.Field) {
-	fieldList := gw.formatFieldList(field)
+func (gw *GinWrapper) Info(ginCtx *gin.Context, msg string, field ...zap.Field) {
+	fieldList := gw.formatFieldList(ginCtx, field)
 	gw.loggerInstance.Info(msg, fieldList...)
 }
 
@@ -106,8 +92,8 @@ func (gw *GinWrapper) Info(msg string, field ...zap.Field) {
 // Author : go_developer@163.com<张德满>
 //
 // Date : 4:29 下午 2021/1/3
-func (gw *GinWrapper) Warn(msg string, field ...zap.Field) {
-	fieldList := gw.formatFieldList(field)
+func (gw *GinWrapper) Warn(ginCtx *gin.Context, msg string, field ...zap.Field) {
+	fieldList := gw.formatFieldList(ginCtx, field)
 	gw.loggerInstance.Warn(msg, fieldList...)
 }
 
@@ -116,8 +102,8 @@ func (gw *GinWrapper) Warn(msg string, field ...zap.Field) {
 // Author : go_developer@163.com<张德满>
 //
 // Date : 4:29 下午 2021/1/3
-func (gw *GinWrapper) Error(msg string, field ...zap.Field) {
-	fieldList := gw.formatFieldList(field)
+func (gw *GinWrapper) Error(ginCtx *gin.Context, msg string, field ...zap.Field) {
+	fieldList := gw.formatFieldList(ginCtx, field)
 	gw.loggerInstance.Error(msg, fieldList...)
 }
 
@@ -126,8 +112,8 @@ func (gw *GinWrapper) Error(msg string, field ...zap.Field) {
 // Author : go_developer@163.com<张德满>
 //
 // Date : 4:29 下午 2021/1/3
-func (gw *GinWrapper) Panic(msg string, field ...zap.Field) {
-	fieldList := gw.formatFieldList(field)
+func (gw *GinWrapper) Panic(ginCtx *gin.Context, msg string, field ...zap.Field) {
+	fieldList := gw.formatFieldList(ginCtx, field)
 	gw.loggerInstance.Panic(msg, fieldList...)
 }
 
@@ -136,8 +122,8 @@ func (gw *GinWrapper) Panic(msg string, field ...zap.Field) {
 // Author : go_developer@163.com<张德满>
 //
 // Date : 4:30 下午 2021/1/3
-func (gw *GinWrapper) DPanic(msg string, field ...zap.Field) {
-	fieldList := gw.formatFieldList(field)
+func (gw *GinWrapper) DPanic(ginCtx *gin.Context, msg string, field ...zap.Field) {
+	fieldList := gw.formatFieldList(ginCtx, field)
 	gw.loggerInstance.DPanic(msg, fieldList...)
 }
 
