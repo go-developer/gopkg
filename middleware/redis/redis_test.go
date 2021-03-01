@@ -23,7 +23,7 @@ import (
 // Date : 10:22 下午 2021/2/27
 func TestCommandProxy(t *testing.T) {
 	instance, err := NewClient(map[string]Options{
-		"test_redis": Options{
+		"test_redis": {
 			Conf: &redisInstance.Options{
 				Addr: "127.0.0.1:6379",
 			},
