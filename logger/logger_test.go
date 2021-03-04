@@ -23,12 +23,11 @@ import (
 //
 // Date : 5:50 下午 2021/1/2
 func Test_Logger(t *testing.T) {
-	encoder := GetEncoder(WithTimeEncoder(MsTimeEncoder))
 	c, err := NewRotateLogConfig("./logs", "test.log", WithTimeIntervalType(TimeIntervalTypeMinute), WithMaxAge(120*time.Second))
 	if nil != err {
 		panic(err)
 	}
-	l, err := NewLogger(zapcore.InfoLevel, true, encoder, c)
+	l, err := NewLogger(zapcore.InfoLevel, c, WithCallerSkip(1), WithConsoleOutput())
 	if nil != err {
 		panic(err)
 	}

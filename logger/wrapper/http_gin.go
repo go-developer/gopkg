@@ -12,6 +12,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-developer/gopkg/logger"
+	logger2 "github.com/go-developer/gopkg/logger"
 	"go.uber.org/zap"
 	"go.uber.org/zap/zapcore"
 )
@@ -26,7 +27,11 @@ func NewGinLogger(loggerLevel zapcore.Level, consoleOutput bool, encoder zapcore
 		err error
 		l   *zap.Logger
 	)
-	if l, err = logger.NewLogger(loggerLevel, consoleOutput, encoder, splitConfig); nil != err {
+	logConfList := []logger2.SetLoggerOptionFunc{logger2.WithEncoder(encoder)}
+	if consoleOutput {
+		logConfList = append(logConfList, logger2.WithConsoleOutput())
+	}
+	if l, err = logger.NewLogger(loggerLevel, splitConfig, logConfList...); nil != err {
 		return nil, err
 	}
 

@@ -25,19 +25,26 @@ import (
 // Author : go_developer@163.com<张德满>
 //
 // Date : 5:05 下午 2021/1/2
-func NewLogger(loggerLevel zapcore.Level, consoleOutput bool, encoder zapcore.Encoder, splitConfig *RotateLogConfig) (*zap.Logger, error) {
+func NewLogger(loggerLevel zapcore.Level, splitConfig *RotateLogConfig, optionFunc ...SetLoggerOptionFunc) (*zap.Logger, error) {
 	if nil == splitConfig {
 		return nil, errors.New("未配置日志切割规则")
 	}
-	if nil == encoder {
-		encoder = GetEncoder()
+
+	o := &OptionLogger{}
+
+	for _, f := range optionFunc {
+		f(o)
+	}
+
+	if nil == o.Encoder {
+		o.Encoder = GetEncoder()
 	}
 	loggerLevelDeal := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
 		return lvl >= loggerLevel
 	})
 	l := &Logger{
 		splitConfig: splitConfig,
-		encoder:     encoder,
+		encoder:     o.Encoder,
 	}
 	var (
 		err          error
@@ -49,19 +56,19 @@ func NewLogger(loggerLevel zapcore.Level, consoleOutput bool, encoder zapcore.En
 	}
 
 	fileHandlerList := []zapcore.Core{
-		zapcore.NewCore(encoder, zapcore.AddSync(loggerWriter), loggerLevelDeal),
+		zapcore.NewCore(o.Encoder, zapcore.AddSync(loggerWriter), loggerLevelDeal),
 	}
 
 	// 设置控制台输出
-	if consoleOutput {
-		fileHandlerList = append(fileHandlerList, zapcore.NewCore(encoder, zapcore.AddSync(os.Stdout), loggerLevelDeal))
+	if o.ConsoleOutput {
+		fileHandlerList = append(fileHandlerList, zapcore.NewCore(o.Encoder, zapcore.AddSync(os.Stdout), loggerLevelDeal))
 	}
 
 	// 最后创建具体的Logger
 	core := zapcore.NewTee(fileHandlerList...)
 
 	// 需要传入 zap.AddCaller() 才会显示打日志点的文件名和行数, 跳过一行可以直接显示业务代码行号,否则显示日志包行号
-	log := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(-1))
+	log := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(3))
 	return log, nil
 }
 

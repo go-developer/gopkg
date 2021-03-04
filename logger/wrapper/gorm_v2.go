@@ -28,7 +28,11 @@ import (
 //
 // Date : 9:56 下午 2021/3/1
 func NewGormV2(loggerLevel zapcore.Level, consoleOutput bool, encoder zapcore.Encoder, splitConfig *logger2.RotateLogConfig, traceIDField string) (logger.Interface, error) {
-	logInstance, err := logger2.NewLogger(loggerLevel, consoleOutput, encoder, splitConfig)
+	logConfList := []logger2.SetLoggerOptionFunc{logger2.WithEncoder(encoder)}
+	if consoleOutput {
+		logConfList = append(logConfList, logger2.WithConsoleOutput())
+	}
+	logInstance, err := logger2.NewLogger(loggerLevel, splitConfig, logConfList...)
 	if nil != err {
 		return nil, err
 	}
@@ -36,7 +40,8 @@ func NewGormV2(loggerLevel zapcore.Level, consoleOutput bool, encoder zapcore.En
 		traceIDField = "trace_id"
 	}
 	return &Gorm{
-		instance: logInstance,
+		instance:     logInstance,
+		traceIDField: traceIDField,
 	}, nil
 }
 
@@ -127,7 +132,6 @@ func (g *Gorm) Trace(ctx context.Context, begin time.Time, fc func() (string, in
 		zap.Int64("affect_rows", affectRows),
 		zap.Error(err),
 	)
-	return
 }
 
 // getTraceID 获取traceID

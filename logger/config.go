@@ -241,10 +241,42 @@ type OptionLogger struct {
 	UseShortCaller bool                    // 使用短的调用文件格式
 	TimeEncoder    zapcore.TimeEncoder     // 格式化时间的函数
 	EncodeDuration zapcore.DurationEncoder // 原始时间信息
+	WithCaller     bool                    // 是否打印文件行号
+	WithCallerSkip int                     // 跳过的调用数
+	ConsoleOutput  bool                    // 控制台输出
+	Encoder        zapcore.Encoder         // 编码函数
 }
 
-// 设置日志配置
+// SetLoggerOptionFunc 设置日志配置
 type SetLoggerOptionFunc func(o *OptionLogger)
+
+// WithCaller 打开文件行号记录
+func WithCaller() SetLoggerOptionFunc {
+	return func(o *OptionLogger) {
+		o.WithCaller = true
+	}
+}
+
+// WithCallerSkip ...
+func WithCallerSkip(skip int) SetLoggerOptionFunc {
+	return func(o *OptionLogger) {
+		o.WithCallerSkip = skip
+	}
+}
+
+// WithConsoleOutput 日志控制台输出
+func WithConsoleOutput() SetLoggerOptionFunc {
+	return func(o *OptionLogger) {
+		o.ConsoleOutput = true
+	}
+}
+
+// WithEncoder ...
+func WithEncoder(encoder zapcore.Encoder) SetLoggerOptionFunc {
+	return func(o *OptionLogger) {
+		o.Encoder = encoder
+	}
+}
 
 // WithUseJsonFormat 日志是否使用json格式数据
 //
