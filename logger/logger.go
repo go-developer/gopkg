@@ -60,7 +60,8 @@ func NewLogger(loggerLevel zapcore.Level, consoleOutput bool, encoder zapcore.En
 	// 最后创建具体的Logger
 	core := zapcore.NewTee(fileHandlerList...)
 
-	log := zap.New(core, zap.AddCaller()) // 需要传入 zap.AddCaller() 才会显示打日志点的文件名和行数
+	// 需要传入 zap.AddCaller() 才会显示打日志点的文件名和行数, 跳过一行可以直接显示业务代码行号,否则显示日志包行号
+	log := zap.New(core, zap.AddCaller(), zap.AddCallerSkip(1))
 	return log, nil
 }
 
