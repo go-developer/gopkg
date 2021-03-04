@@ -32,6 +32,9 @@ func NewGormV2(loggerLevel zapcore.Level, consoleOutput bool, encoder zapcore.En
 	if nil != err {
 		return nil, err
 	}
+	if len(traceIDField) == 0 {
+		traceIDField = "trace_id"
+	}
 	return &Gorm{
 		instance: logInstance,
 	}, nil
