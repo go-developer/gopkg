@@ -11,6 +11,8 @@ import (
 	"io"
 	"os"
 
+	"github.com/pkg/errors"
+
 	"go.uber.org/zap"
 
 	"go.uber.org/zap/zapcore"
@@ -24,6 +26,12 @@ import (
 //
 // Date : 5:05 下午 2021/1/2
 func NewLogger(loggerLevel zapcore.Level, consoleOutput bool, encoder zapcore.Encoder, splitConfig *RotateLogConfig) (*zap.Logger, error) {
+	if nil == splitConfig {
+		return nil, errors.New("未配置日志切割规则")
+	}
+	if nil == encoder {
+		encoder = GetEncoder()
+	}
 	loggerLevelDeal := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
 		return lvl >= loggerLevel
 	})
