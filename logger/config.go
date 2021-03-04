@@ -102,7 +102,7 @@ func NewRotateLogConfig(logPath string, logFile string, option ...SetRotateLogCo
 		return nil, LogPathEmptyError()
 	}
 	c := &RotateLogConfig{
-		TimeIntervalType: 0,
+		TimeIntervalType: TimeIntervalTypeHour,
 		LogPath:          logPath,
 		LogFileName:      logFile,
 		DivisionChar:     "",
