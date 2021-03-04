@@ -27,7 +27,7 @@ func NewGinLogger(loggerLevel zapcore.Level, consoleOutput bool, encoder zapcore
 		err error
 		l   *zap.Logger
 	)
-	logConfList := []logger2.SetLoggerOptionFunc{logger2.WithEncoder(encoder)}
+	logConfList := []logger2.SetLoggerOptionFunc{logger2.WithEncoder(encoder), logger2.WithCaller(), logger2.WithCallerSkip(1)}
 	if consoleOutput {
 		logConfList = append(logConfList, logger2.WithConsoleOutput())
 	}
