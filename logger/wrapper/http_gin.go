@@ -22,12 +22,12 @@ import (
 // Author : go_developer@163.com<张德满>
 //
 // Date : 3:45 下午 2021/1/3
-func NewGinLogger(loggerLevel zapcore.Level, consoleOutput bool, encoder zapcore.Encoder, splitConfig *logger.RotateLogConfig, extractFieldList []string) (*Gin, error) {
+func NewGinLogger(loggerLevel zapcore.Level, consoleOutput bool, encoder zapcore.Encoder, splitConfig *logger.RotateLogConfig, extractFieldList []string, skip int) (*Gin, error) {
 	var (
 		err error
 		l   *zap.Logger
 	)
-	logConfList := []logger2.SetLoggerOptionFunc{logger2.WithEncoder(encoder), logger2.WithCaller(), logger2.WithCallerSkip(1)}
+	logConfList := []logger2.SetLoggerOptionFunc{logger2.WithEncoder(encoder), logger2.WithCaller(), logger2.WithCallerSkip(skip)}
 	if consoleOutput {
 		logConfList = append(logConfList, logger2.WithConsoleOutput())
 	}

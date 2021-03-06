@@ -27,8 +27,8 @@ import (
 // Author : go_developer@163.com<张德满>
 //
 // Date : 9:56 下午 2021/3/1
-func NewGormV2(loggerLevel zapcore.Level, consoleOutput bool, encoder zapcore.Encoder, splitConfig *logger2.RotateLogConfig, traceIDField string) (logger.Interface, error) {
-	logConfList := []logger2.SetLoggerOptionFunc{logger2.WithEncoder(encoder), logger2.WithCallerSkip(3), logger2.WithCaller()}
+func NewGormV2(loggerLevel zapcore.Level, consoleOutput bool, encoder zapcore.Encoder, splitConfig *logger2.RotateLogConfig, traceIDField string, skip int) (logger.Interface, error) {
+	logConfList := []logger2.SetLoggerOptionFunc{logger2.WithEncoder(encoder), logger2.WithCallerSkip(skip), logger2.WithCaller()}
 	if consoleOutput {
 		logConfList = append(logConfList, logger2.WithConsoleOutput())
 	}
