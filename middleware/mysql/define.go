@@ -40,6 +40,7 @@ type LogConfig struct {
 	SplitConfig      *logger.RotateLogConfig
 	ExtractFieldList []string
 	TraceFieldName   string
+	Skip             int
 }
 
 const (

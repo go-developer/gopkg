@@ -40,7 +40,8 @@ func GetDatabaseClient(conf *DBConfig, logConf *LogConfig) (*gorm.DB, error) {
 		logConf.ConsoleOutput,
 		logConf.Encoder,
 		logConf.SplitConfig,
-		logConf.TraceFieldName); nil != err {
+		logConf.TraceFieldName,
+		logConf.Skip); nil != err {
 		return nil, CreateDBLogError(err)
 	}
 	return instance, nil
