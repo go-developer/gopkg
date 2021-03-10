@@ -3,6 +3,7 @@ module github.com/go-developer/gopkg
 go 1.15
 
 require (
+	github.com/buger/jsonparser v1.1.1 // indirect
 	github.com/gin-gonic/gin v1.6.3
 	github.com/go-redis/redis/v8 v8.6.0
 	github.com/lestrrat-go/file-rotatelogs v2.4.0+incompatible
