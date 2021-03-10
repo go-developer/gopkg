@@ -24,7 +24,7 @@ func Filter(source []byte, filter []string) ([]byte, error) {
 		setErr error
 	)
 	for _, item := range filter {
-		fieldList := strings.Split(item, ",")
+		fieldList := strings.Split(item, ".")
 		val, _, _, err := jsonparser.Get(source, fieldList...)
 		if nil != err {
 			return nil, err
