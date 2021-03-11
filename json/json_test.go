@@ -15,6 +15,12 @@ import (
 func TestJSON(t *testing.T) {
 	tree := NewDynamicJSON()
 	tree.SetValue("extra.height.value", 180)
-	tree.SetValue("extra.height.unit", "cm")
-	fmt.Println(tree.root)
+	tree.SetValue("extra.height.unit.use", "cm")
+	tree.SetValue("extra.height.unit.open", "1")
+	tree.SetValue("name", "zhangdeman")
+	tree.SetValue("good.name", "good")
+	tree.SetValue("work", "111")
+	tree.SetValue("good.price", "180")
+	tree.SetValue("good.unit", "$")
+	fmt.Println(tree.String())
 }
