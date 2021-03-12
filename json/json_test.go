@@ -14,6 +14,7 @@ import (
 
 func TestJSON(t *testing.T) {
 	tree := NewDynamicJSON()
+	fmt.Println(tree.extraSliceIndex("[200]"))
 	tree.SetValue("extra.height.value", 180)
 	tree.SetValue("extra.height.unit.use", "cm")
 	tree.SetValue("extra.height.unit.open", "1")

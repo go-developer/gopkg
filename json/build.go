@@ -9,6 +9,8 @@ package json
 
 import (
 	"fmt"
+	"regexp"
+	"strconv"
 	"strings"
 
 	"github.com/go-developer/gopkg/easylock"
@@ -31,6 +33,8 @@ type JSONode struct {
 	Child            []*JSONode  // 子节点
 	IsRoot           bool        // 是否根节点
 	IsHasLastBrother bool        // 在此之后是否有其他兄弟节点
+	IsSlice          bool        // 是否是list
+	Sort             int         // 此属性用于　slice解析,保证最终排序是对的
 }
 
 // NewDynamicJSON 获取JSON实例
@@ -39,6 +43,7 @@ type JSONode struct {
 //
 // Date : 10:36 下午 2021/3/10
 func NewDynamicJSON() *DynamicJSON {
+	exp, _ := regexp.Compile(`\[(\d*?)]`)
 	return &DynamicJSON{
 		root: &JSONode{
 			Key:    "",
@@ -46,8 +51,9 @@ func NewDynamicJSON() *DynamicJSON {
 			Child:  nil,
 			IsRoot: true,
 		},
-		nodeCnt: 0,
-		lock:    easylock.NewLock(),
+		nodeCnt:  0,
+		lock:     easylock.NewLock(),
+		sliceExp: exp,
 	}
 }
 
@@ -57,9 +63,10 @@ func NewDynamicJSON() *DynamicJSON {
 //
 // Date : 11:03 下午 2021/3/10
 type DynamicJSON struct {
-	root    *JSONode          // 节点数
-	nodeCnt int               // 节点数量
-	lock    easylock.EasyLock // 锁
+	root     *JSONode          // 节点数
+	nodeCnt  int               // 节点数量
+	lock     easylock.EasyLock // 锁
+	sliceExp *regexp.Regexp    // 抽取slice索引的正则
 }
 
 // SetValue 设置节点值,如果节点不存在,创建;如果已存在,更新, 多级key使用, value 必须是基础数据类型, 如果是结构体, 需要继续添加path,多级path使用.分割
@@ -115,7 +122,11 @@ func (dj *DynamicJSON) buildTpl(root *JSONode, tplList *[]string, valList *[]int
 		if root.IsRoot {
 			*tplList = append(*tplList, "{")
 		} else {
-			*tplList = append(*tplList, key+":{")
+			if root.IsSlice {
+				*tplList = append(*tplList, key+":{")
+			} else {
+				*tplList = append(*tplList, key+":{")
+			}
 		}
 	} else {
 		if root.IsHasLastBrother {
@@ -137,7 +148,12 @@ func (dj *DynamicJSON) buildTpl(root *JSONode, tplList *[]string, valList *[]int
 	if root.IsHasLastBrother {
 		*tplList = append(*tplList, "},")
 	} else {
-		*tplList = append(*tplList, "}")
+		if root.IsSlice {
+			*tplList = append(*tplList, "}]")
+		} else {
+			*tplList = append(*tplList, "}")
+
+		}
 	}
 	return tplList, valList
 }
@@ -189,4 +205,26 @@ func (dj *DynamicJSON) createNode(parent *JSONode, key string, value interface{}
 	dj.nodeCnt++
 	_ = dj.lock.Unlock("")
 	return nil
+}
+
+// extraSliceIndex 抽取slice索引
+//
+// Author : go_developer@163.com<张德满>
+//
+// Date : 9:37 下午 2021/3/11
+func (dj *DynamicJSON) extraSliceIndex(key string) (bool, int) {
+	if len(key) < 3 {
+		// slice 至少是 [1] 格式
+		return false, 0
+	}
+	// 不用正则,直接字符串处理
+	strByte := []byte(key)
+	if string(strByte[0:1]) != "[" || string(strByte[len(strByte)-1:]) != "]" {
+		return false, 0
+	}
+	index, err := strconv.Atoi(string(strByte[1 : len(strByte)-1]))
+	if nil != err {
+		return false, 0
+	}
+	return true, index
 }
