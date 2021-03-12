@@ -22,7 +22,7 @@ const (
 
 // JSONode JSOM节点
 //
-// Author : zhangdeman001@ke.com<张德满>
+// Author : go_developer@163.com<张德满>
 //
 // Date : 10:33 下午 2021/3/10
 type JSONode struct {
