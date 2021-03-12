@@ -34,6 +34,7 @@ type JSONode struct {
 	IsRoot           bool        // 是否根节点
 	IsHasLastBrother bool        // 在此之后是否有其他兄弟节点
 	IsSlice          bool        // 是否是list
+	IsIndexNode      bool        // 是否是slice的索引节点
 	Sort             int         // 此属性用于　slice解析,保证最终排序是对的
 }
 
@@ -89,8 +90,10 @@ func (dj *DynamicJSON) SetValue(path string, value interface{}) {
 				val = value
 			}
 			_ = dj.createNode(parent, key, val)
-			searchRoot = parent.Child[len(parent.Child)-1]
-			parent = parent.Child[len(parent.Child)-1]
+			if len(parent.Child) > 0 {
+				searchRoot = parent.Child[len(parent.Child)-1]
+				parent = parent.Child[len(parent.Child)-1]
+			}
 		}
 	}
 }
@@ -117,30 +120,36 @@ func (dj *DynamicJSON) buildTpl(root *JSONode, tplList *[]string, valList *[]int
 		*tplList = append(*tplList, "}")
 		return tplList, valList
 	}
+
 	key := "\"" + root.Key + "\""
-	if len(root.Child) > 0 {
-		if root.IsRoot {
-			*tplList = append(*tplList, "{")
-		} else {
-			if root.IsSlice {
-				*tplList = append(*tplList, key+":{")
+	if !root.IsIndexNode {
+		if len(root.Child) > 0 {
+			if root.IsRoot {
+				*tplList = append(*tplList, "{")
 			} else {
-				*tplList = append(*tplList, key+":{")
+				if root.IsSlice {
+					*tplList = append(*tplList, key+":[")
+				} else {
+					*tplList = append(*tplList, key+":{")
+				}
 			}
+		} else {
+			if root.IsHasLastBrother {
+				*tplList = append(*tplList, key+":%v,")
+			} else {
+				*tplList = append(*tplList, key+":%v")
+			}
+			switch val := root.Value.(type) {
+			case string:
+				*valList = append(*valList, "\""+val+"\"")
+			default:
+				*valList = append(*valList, root.Value)
+			}
+			return tplList, valList
+
 		}
 	} else {
-		if root.IsHasLastBrother {
-			*tplList = append(*tplList, key+":%v,")
-		} else {
-			*tplList = append(*tplList, key+":%v")
-		}
-		switch val := root.Value.(type) {
-		case string:
-			*valList = append(*valList, "\""+val+"\"")
-		default:
-			*valList = append(*valList, root.Value)
-		}
-		return tplList, valList
+		*tplList = append(*tplList, "{")
 	}
 	for _, node := range root.Child {
 		dj.buildTpl(node, tplList, valList)
@@ -149,7 +158,7 @@ func (dj *DynamicJSON) buildTpl(root *JSONode, tplList *[]string, valList *[]int
 		*tplList = append(*tplList, "},")
 	} else {
 		if root.IsSlice {
-			*tplList = append(*tplList, "}]")
+			*tplList = append(*tplList, "]")
 		} else {
 			*tplList = append(*tplList, "}")
 
@@ -195,13 +204,19 @@ func (dj *DynamicJSON) createNode(parent *JSONode, key string, value interface{}
 		// 存在子节点，设置当前子节点还有其他兄弟节点
 		parent.Child[len(parent.Child)-1].IsHasLastBrother = true
 	}
-	parent.Child = append(parent.Child, &JSONode{
+
+	newNode := &JSONode{
 		Key:              key,
 		Value:            value,
 		Child:            make([]*JSONode, 0),
 		IsRoot:           false,
 		IsHasLastBrother: false,
-	})
+	}
+	parent.IsSlice, newNode.Sort = dj.extraSliceIndex(key)
+	if parent.IsSlice {
+		newNode.IsIndexNode = true
+	}
+	parent.Child = append(parent.Child, newNode)
 	dj.nodeCnt++
 	_ = dj.lock.Unlock("")
 	return nil
