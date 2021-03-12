@@ -149,21 +149,54 @@ func (dj *DynamicJSON) buildTpl(root *JSONode, tplList *[]string, valList *[]int
 
 		}
 	} else {
-		*tplList = append(*tplList, "{")
+		if len(root.Child) == 0 {
+
+			switch val := root.Value.(type) {
+			case string:
+				*valList = append(*valList, val)
+				if root.IsHasLastBrother {
+					*tplList = append(*tplList, "\"%v\",")
+				} else {
+					*tplList = append(*tplList, "\"%v\"")
+
+				}
+			default:
+				if root.IsHasLastBrother {
+					*tplList = append(*tplList, "%v,")
+				} else {
+					*tplList = append(*tplList, "%v")
+
+				}
+				*valList = append(*valList, root.Value)
+			}
+		} else {
+			*tplList = append(*tplList, "{")
+		}
+
 	}
 	for _, node := range root.Child {
 		dj.buildTpl(node, tplList, valList)
 	}
-	if root.IsHasLastBrother {
-		*tplList = append(*tplList, "},")
-	} else {
-		if root.IsSlice {
-			*tplList = append(*tplList, "]")
+	if !root.IsIndexNode {
+		if root.IsHasLastBrother {
+			*tplList = append(*tplList, "},")
 		} else {
-			*tplList = append(*tplList, "}")
-
+			if root.IsSlice {
+				*tplList = append(*tplList, "]")
+			} else {
+				*tplList = append(*tplList, "}")
+			}
+		}
+	} else {
+		if len(root.Child) > 0 {
+			if root.IsHasLastBrother {
+				*tplList = append(*tplList, "},")
+			} else {
+				*tplList = append(*tplList, "}")
+			}
 		}
 	}
+
 	return tplList, valList
 }
 

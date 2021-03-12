@@ -26,5 +26,6 @@ func TestJSON(t *testing.T) {
 	tree.SetValue("slice.[0].name", "zhang")
 	tree.SetValue("slice.[1].name", "de")
 	tree.SetValue("slice.[2].name", "man")
+	tree.SetValue("slice.[3]", "zhangdeman")
 	fmt.Println(tree.String())
 }
