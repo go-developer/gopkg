@@ -217,11 +217,12 @@ func (dj *DynamicJSON) extraSliceIndex(key string) (bool, int) {
 		// slice 至少是 [1] 格式
 		return false, 0
 	}
-	// 不用正则,直接字符串处理
-	strByte := []byte(key)
-	if string(strByte[0:1]) != "[" || string(strByte[len(strByte)-1:]) != "]" {
+
+	if !strings.HasPrefix(key, "[") || !strings.HasSuffix(key, "]") {
 		return false, 0
 	}
+	// 不用正则,直接字符串处理
+	strByte := []byte(key)
 	index, err := strconv.Atoi(string(strByte[1 : len(strByte)-1]))
 	if nil != err {
 		return false, 0
