@@ -124,15 +124,7 @@ func (dj *DynamicJSON) buildTpl(root *JSONode, tplList *[]string, valList *[]int
 	key := "\"" + root.Key + "\""
 	if !root.IsIndexNode {
 		if len(root.Child) > 0 {
-			if root.IsRoot {
-				*tplList = append(*tplList, "{")
-			} else {
-				if root.IsSlice {
-					*tplList = append(*tplList, key+":[")
-				} else {
-					*tplList = append(*tplList, key+":{")
-				}
-			}
+			*tplList = append(*tplList, dj.getStartSymbol(root))
 		} else {
 			if root.IsHasLastBrother {
 				*tplList = append(*tplList, key+":%v,")
@@ -177,27 +169,64 @@ func (dj *DynamicJSON) buildTpl(root *JSONode, tplList *[]string, valList *[]int
 	for _, node := range root.Child {
 		dj.buildTpl(node, tplList, valList)
 	}
-	if !root.IsIndexNode {
-		if root.IsHasLastBrother {
-			*tplList = append(*tplList, "},")
-		} else {
-			if root.IsSlice {
-				*tplList = append(*tplList, "]")
-			} else {
-				*tplList = append(*tplList, "}")
-			}
-		}
-	} else {
-		if len(root.Child) > 0 {
-			if root.IsHasLastBrother {
-				*tplList = append(*tplList, "},")
-			} else {
-				*tplList = append(*tplList, "}")
-			}
-		}
-	}
+	*tplList = append(*tplList, dj.getEndSymbol(root))
 
 	return tplList, valList
+}
+
+// getStartSymbol 计算起始的符号
+//
+// Author : go_developer@163.com<张德满>
+//
+// Date : 12:21 下午 2021/3/13
+func (dj *DynamicJSON) getStartSymbol(root *JSONode) string {
+	if root.IsRoot {
+		return "{"
+	}
+	key := fmt.Sprintf("\"%s\"", root.Key)
+	if !root.IsIndexNode {
+		if len(root.Child) > 0 {
+
+			if root.IsSlice {
+				return key + ":["
+			} else {
+				return key + ":{"
+			}
+
+		}
+		return ""
+	}
+	if len(root.Child) > 0 {
+		return "{"
+	}
+	return ""
+}
+
+// getEndSymbol 计算结束的符号
+//
+// Author : go_developer@163.com<张德满>
+//
+// Date : 12:21 下午 2021/3/13
+func (dj *DynamicJSON) getEndSymbol(root *JSONode) string {
+	if !root.IsIndexNode {
+		if root.IsHasLastBrother {
+			return "},"
+		}
+		if root.IsSlice {
+			return "]"
+		} else {
+			return "}"
+		}
+
+	}
+	if len(root.Child) > 0 {
+		if root.IsHasLastBrother {
+			return "},"
+		}
+		return "}"
+
+	}
+	return ""
 }
 
 // Search 搜索一个key TODO : 优化
