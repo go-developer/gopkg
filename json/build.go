@@ -121,16 +121,12 @@ func (dj *DynamicJSON) buildTpl(root *JSONode, tplList *[]string, valList *[]int
 		return tplList, valList
 	}
 
-	key := "\"" + root.Key + "\""
+	// key := "\"" + root.Key + "\""
 	if !root.IsIndexNode {
 		if len(root.Child) > 0 {
 			*tplList = append(*tplList, dj.getStartSymbol(root))
 		} else {
-			if root.IsHasLastBrother {
-				*tplList = append(*tplList, key+":%v,")
-			} else {
-				*tplList = append(*tplList, key+":%v")
-			}
+			*tplList = append(*tplList, dj.getValFormat(root))
 			switch val := root.Value.(type) {
 			case string:
 				*valList = append(*valList, "\""+val+"\"")
@@ -146,19 +142,9 @@ func (dj *DynamicJSON) buildTpl(root *JSONode, tplList *[]string, valList *[]int
 			switch val := root.Value.(type) {
 			case string:
 				*valList = append(*valList, val)
-				if root.IsHasLastBrother {
-					*tplList = append(*tplList, "\"%v\",")
-				} else {
-					*tplList = append(*tplList, "\"%v\"")
-
-				}
+				*tplList = append(*tplList, dj.getValFormat(root))
 			default:
-				if root.IsHasLastBrother {
-					*tplList = append(*tplList, "%v,")
-				} else {
-					*tplList = append(*tplList, "%v")
-
-				}
+				*tplList = append(*tplList, dj.getValFormat(root))
 				*valList = append(*valList, root.Value)
 			}
 		} else {
@@ -172,6 +158,44 @@ func (dj *DynamicJSON) buildTpl(root *JSONode, tplList *[]string, valList *[]int
 	*tplList = append(*tplList, dj.getEndSymbol(root))
 
 	return tplList, valList
+}
+
+// getValFormat 构建值得占位符
+//
+// Author : go_developer@163.com<张德满>
+//
+// Date : 12:49 下午 2021/3/13
+func (dj *DynamicJSON) getValFormat(root *JSONode) string {
+	key := fmt.Sprintf("\"%s\"", root.Key)
+	if !root.IsIndexNode {
+		if len(root.Child) > 0 {
+			// 还有自节点的情况下,不需要占位符
+			return ""
+		}
+		if root.IsHasLastBrother {
+			return key + ":%v,"
+		}
+		return key + ":%v"
+	}
+
+	if len(root.Child) > 0 {
+		// 是list的索引节点,且有子节点
+		return ""
+	}
+	switch root.Value.(type) {
+	case string:
+		if root.IsHasLastBrother {
+			return "\"%v\","
+		} else {
+			return "\"%v\""
+		}
+	default:
+		if root.IsHasLastBrother {
+			return "%v,"
+		}
+		return "%v"
+	}
+	return ""
 }
 
 // getStartSymbol 计算起始的符号
