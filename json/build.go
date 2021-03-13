@@ -117,16 +117,17 @@ func (dj *DynamicJSON) String() string {
 // Date : 4:38 下午 2021/3/11
 func (dj *DynamicJSON) buildTpl(root *JSONode, tplList *[]string, valList *[]interface{}) (*[]string, *[]interface{}) {
 	if nil == root {
-		*tplList = append(*tplList, "}")
 		return tplList, valList
 	}
-
+	startSymbol := dj.getStartSymbol(root)
+	endSymbol := dj.getEndSymbol(root)
+	valFormat := dj.getValFormat(root)
 	// key := "\"" + root.Key + "\""
 	if !root.IsIndexNode {
 		if len(root.Child) > 0 {
-			*tplList = append(*tplList, dj.getStartSymbol(root))
+			*tplList = append(*tplList, startSymbol)
 		} else {
-			*tplList = append(*tplList, dj.getValFormat(root))
+			*tplList = append(*tplList, valFormat)
 			switch val := root.Value.(type) {
 			case string:
 				*valList = append(*valList, "\""+val+"\"")
@@ -134,11 +135,9 @@ func (dj *DynamicJSON) buildTpl(root *JSONode, tplList *[]string, valList *[]int
 				*valList = append(*valList, root.Value)
 			}
 			return tplList, valList
-
 		}
 	} else {
 		if len(root.Child) == 0 {
-
 			switch val := root.Value.(type) {
 			case string:
 				*valList = append(*valList, val)
@@ -148,14 +147,13 @@ func (dj *DynamicJSON) buildTpl(root *JSONode, tplList *[]string, valList *[]int
 				*valList = append(*valList, root.Value)
 			}
 		} else {
-			*tplList = append(*tplList, "{")
+			*tplList = append(*tplList, startSymbol)
 		}
-
 	}
 	for _, node := range root.Child {
 		dj.buildTpl(node, tplList, valList)
 	}
-	*tplList = append(*tplList, dj.getEndSymbol(root))
+	*tplList = append(*tplList, endSymbol)
 
 	return tplList, valList
 }
@@ -186,16 +184,14 @@ func (dj *DynamicJSON) getValFormat(root *JSONode) string {
 	case string:
 		if root.IsHasLastBrother {
 			return "\"%v\","
-		} else {
-			return "\"%v\""
 		}
+		return "\"%v\""
 	default:
 		if root.IsHasLastBrother {
 			return "%v,"
 		}
 		return "%v"
 	}
-	return ""
 }
 
 // getStartSymbol 计算起始的符号
@@ -204,7 +200,7 @@ func (dj *DynamicJSON) getValFormat(root *JSONode) string {
 //
 // Date : 12:21 下午 2021/3/13
 func (dj *DynamicJSON) getStartSymbol(root *JSONode) string {
-	if root.IsRoot {
+	if nil == root || root.IsRoot {
 		return "{"
 	}
 	key := fmt.Sprintf("\"%s\"", root.Key)
@@ -232,6 +228,9 @@ func (dj *DynamicJSON) getStartSymbol(root *JSONode) string {
 //
 // Date : 12:21 下午 2021/3/13
 func (dj *DynamicJSON) getEndSymbol(root *JSONode) string {
+	if nil == root {
+		return "}"
+	}
 	if !root.IsIndexNode {
 		if root.IsHasLastBrother {
 			return "},"
