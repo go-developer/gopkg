@@ -200,7 +200,14 @@ func (dj *DynamicJSON) getValFormat(root *JSONode) string {
 //
 // Date : 12:21 下午 2021/3/13
 func (dj *DynamicJSON) getStartSymbol(root *JSONode) string {
-	if nil == root || root.IsRoot {
+	if nil == root {
+		return "{"
+	}
+
+	if root.IsRoot {
+		if root.IsSlice {
+			return "["
+		}
 		return "{"
 	}
 	key := fmt.Sprintf("\"%s\"", root.Key)

@@ -33,6 +33,11 @@ func TestJSON(t *testing.T) {
 	tree.SetValue("slice.[2].name", "man")
 	tree.SetValue("slice.[3]", "zhangdeman")
 	fmt.Println(tree.String())
+	tree = NewDynamicJSON()
+	tree.SetValue("[0]", "zhang")
+	tree.SetValue("[1]", "de")
+	tree.SetValue("[2]", "man")
+	fmt.Println(tree.String())
 }
 
 // TestType 判断数据类型断言
