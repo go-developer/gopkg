@@ -12,6 +12,11 @@ import (
 	"testing"
 )
 
+// TestJSON ...
+//
+// Author : go_developer@163.com<张德满>
+//
+// Date : 10:58 下午 2021/3/14
 func TestJSON(t *testing.T) {
 	tree := NewDynamicJSON()
 	fmt.Println(tree.extraSliceIndex("[200]"))
@@ -28,4 +33,13 @@ func TestJSON(t *testing.T) {
 	tree.SetValue("slice.[2].name", "man")
 	tree.SetValue("slice.[3]", "zhangdeman")
 	fmt.Println(tree.String())
+}
+
+// TestType 判断数据类型断言
+//
+// Author : go_developer@163.com<张德满>
+//
+// Date : 10:59 下午 2021/3/14
+func TestType(t *testing.T) {
+
 }
