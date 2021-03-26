@@ -7,7 +7,9 @@
 // Date : 2021-03-26 2:06 下午
 package api
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+)
 
 // IApi 每一个接口的实现约束
 //
@@ -24,3 +26,10 @@ type IApi interface {
 	// 处理的handler
 	GetHandler() gin.HandlerFunc
 }
+
+// RouterFunc 注册路由的函数
+//
+// Author : go_developer@163.com<张德满>
+//
+// Date : 3:09 下午 2021/3/26
+type RouterFunc func() (method string, uri string, handlerFunc gin.HandlerFunc, middlewareList []gin.HandlerFunc)

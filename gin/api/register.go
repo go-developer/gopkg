@@ -9,9 +9,13 @@ package api
 
 import (
 	"log"
+	"reflect"
+
+	"github.com/go-developer/gopkg/gin/util"
+
+	"github.com/pkg/errors"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-developer/gopkg/gin/util"
 )
 
 var (
@@ -33,11 +37,59 @@ func DisableDebugLog() {
 // Author : go_developer@163.com<张德满>
 //
 // Date : 2:14 下午 2021/3/26
-func RegisterRouter(router *gin.Engine, apiInstanceList ...IApi) error {
+func RegisterRouter(router *gin.Engine, apiInstanceList ...interface{}) error {
 	for _, apiInstance := range apiInstanceList {
-		if err := util.RegisterRouter(router, apiInstance.GetMethod(), apiInstance.GetURI(), apiInstance.GetHandler(), apiInstance.GetMiddleWareList()); nil != err {
-			routerLog(err)
-			panic(err.Error())
+		if nil == apiInstance {
+			continue
+		}
+		val := reflect.ValueOf(apiInstance)
+		switch val.Kind() {
+		case reflect.Struct:
+			fallthrough
+		case reflect.Ptr:
+			api, ok := apiInstance.(IApi)
+			if ok {
+				if err := util.RegisterRouter(router, api.GetMethod(), api.GetURI(), api.GetHandler(), api.GetMiddleWareList()); nil != err {
+					routerLog(err.Error())
+					return err
+				}
+				continue
+			}
+			routerLog(val.String() + " 注册的路由既不是 IApi 也不是 RouterFunc, 自动识别函数是否包含RouterFunc")
+			// 不是IApi接口,自动识别函数列表 RouterFunc 函数自动注册
+			methodCnt := val.NumMethod()
+			for i := 0; i < methodCnt; i++ {
+				apiFuncList := val.Method(i).Call(nil)
+				for _, apiFuncVal := range apiFuncList {
+					apiFunc, ok := apiFuncVal.Interface().(RouterFunc)
+					if !ok {
+						continue
+					}
+					method, uri, handler, middlewareList := apiFunc()
+					if err := util.RegisterRouter(router, method, uri, handler, middlewareList); nil != err {
+						routerLog(err.Error())
+						return err
+					}
+					routerLog(apiFuncVal.String() + " 自动注册路由成功")
+				}
+
+			}
+		case reflect.Func:
+			api, ok := apiInstance.(RouterFunc)
+			if !ok {
+				err := errors.New("注册的路由必须是 IApi 或者 RouterFunc")
+				routerLog(err.Error())
+				return err
+			}
+			method, uri, handler, middlewareList := api()
+			if err := util.RegisterRouter(router, method, uri, handler, middlewareList); nil != err {
+				routerLog(err.Error())
+				return err
+			}
+		default:
+			err := errors.New("注册的路由必须是 IApi 或者 RouterFunc")
+			routerLog(err.Error())
+			return err
 		}
 	}
 	return nil
@@ -48,9 +100,9 @@ func RegisterRouter(router *gin.Engine, apiInstanceList ...IApi) error {
 // Author : go_developer@163.com<张德满>
 //
 // Date : 2:28 下午 2021/3/26
-func routerLog(err error) {
-	if !DebugLogEnable || nil == err {
+func routerLog(msg string) {
+	if !DebugLogEnable || len(msg) == 0 {
 		return
 	}
-	log.Fatal(err.Error())
+	log.Print(msg)
 }
