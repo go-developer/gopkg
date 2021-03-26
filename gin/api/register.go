@@ -55,10 +55,20 @@ func RegisterRouter(router *gin.Engine, apiInstanceList ...interface{}) error {
 				}
 				continue
 			}
-			routerLog(val.String() + " 注册的路由既不是 IApi 也不是 RouterFunc, 自动识别函数是否包含RouterFunc")
+			routerLog(val.String() + "结构体或者结构体指针, 自动识别函数是否包含RouterFunc")
 			// 不是IApi接口,自动识别函数列表 RouterFunc 函数自动注册
 			methodCnt := val.NumMethod()
 			for i := 0; i < methodCnt; i++ {
+				// TODO : 识别函数本身是不是 RouterFunc
+				af, o := val.Method(i).Interface().(func() (string, string, gin.HandlerFunc, []gin.HandlerFunc))
+				if o {
+					method, uri, handler, middlewareList := af()
+					if err := util.RegisterRouter(router, method, uri, handler, middlewareList); nil != err {
+						routerLog(err.Error())
+						return err
+					}
+					continue
+				}
 				apiFuncList := val.Method(i).Call(nil)
 				for _, apiFuncVal := range apiFuncList {
 					apiFunc, ok := apiFuncVal.Interface().(RouterFunc)
@@ -70,14 +80,13 @@ func RegisterRouter(router *gin.Engine, apiInstanceList ...interface{}) error {
 						routerLog(err.Error())
 						return err
 					}
-					routerLog(apiFuncVal.String() + " 自动注册路由成功")
 				}
 
 			}
 		case reflect.Func:
 			api, ok := apiInstance.(RouterFunc)
 			if !ok {
-				err := errors.New("注册的路由必须是 IApi 或者 RouterFunc")
+				err := errors.New("函数方式注册路由必须是 RouterFunc")
 				routerLog(err.Error())
 				return err
 			}
@@ -87,7 +96,7 @@ func RegisterRouter(router *gin.Engine, apiInstanceList ...interface{}) error {
 				return err
 			}
 		default:
-			err := errors.New("注册的路由必须是 IApi 或者 RouterFunc")
+			err := errors.New("注册的路由必须是 IApi 或者 RouterFunc 或者 包含 RouterFunc 的结构体")
 			routerLog(err.Error())
 			return err
 		}

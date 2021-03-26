@@ -70,3 +70,9 @@ func (oa *otherApi) DemoApiFunc() RouterFunc {
 func (oa *otherApi) Lala() {
 
 }
+
+func (oa *otherApi) SelfApi() (method string, uri string, handlerFunc gin.HandlerFunc, middlewareList []gin.HandlerFunc) {
+	return http.MethodGet, "/api/other/self/test", func(context *gin.Context) {
+
+	}, nil
+}
