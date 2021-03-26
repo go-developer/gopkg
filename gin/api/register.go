@@ -33,7 +33,7 @@ func DisableDebugLog() {
 // Author : go_developer@163.com<张德满>
 //
 // Date : 2:14 下午 2021/3/26
-func RegisterRouter(router *gin.Engine, apiInstanceList []IApi) error {
+func RegisterRouter(router *gin.Engine, apiInstanceList ...IApi) error {
 	for _, apiInstance := range apiInstanceList {
 		if err := util.RegisterRouter(router, apiInstance.GetMethod(), apiInstance.GetURI(), apiInstance.GetHandler(), apiInstance.GetMiddleWareList()); nil != err {
 			routerLog(err)
