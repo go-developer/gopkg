@@ -17,29 +17,44 @@ import "sync"
 func NewLock() EasyLock {
 	return &lock{
 		sc: &sync.RWMutex{},
+		lockCnt: &LockCnt{
+			Write: 0,
+			Read:  0,
+		},
 	}
 }
 
 type lock struct {
-	sc *sync.RWMutex
+	sc      *sync.RWMutex
+	lockCnt *LockCnt
+	base
 }
 
 func (l *lock) Lock(optionFuncList ...OptionFunc) error {
+	defer l.AddLockCnt(l.lockCnt)
 	l.sc.Lock()
 	return nil
 }
 
 func (l *lock) Unlock(optionFuncList ...OptionFunc) error {
+	defer l.DecreaseLockCnt(l.lockCnt)
 	l.sc.Unlock()
 	return nil
 }
 
 func (l *lock) RLock(optionFuncList ...OptionFunc) error {
+	defer l.AddRLockCnt(l.lockCnt)
+
 	l.sc.RLock()
 	return nil
 }
 
 func (l *lock) RUnlock(optionFuncList ...OptionFunc) error {
+	defer l.DecreaseRLockCnt(l.lockCnt)
 	l.sc.Unlock()
 	return nil
+}
+
+func (l *lock) GetLockCnt() *LockCnt {
+	return l.lockCnt
 }

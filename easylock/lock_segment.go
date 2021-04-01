@@ -21,6 +21,10 @@ func NewSegment(segmentCnt int) (EasyLock, error) {
 	s := &segment{
 		lockTable:  make([]EasyLock, segmentCnt),
 		segmentCnt: segmentCnt,
+		lockCnt: &LockCnt{
+			Write: 0,
+			Read:  0,
+		},
 	}
 	for i := 0; i < segmentCnt; i++ {
 		s.lockTable[i] = NewLock()
@@ -31,25 +35,34 @@ func NewSegment(segmentCnt int) (EasyLock, error) {
 type segment struct {
 	lockTable  []EasyLock
 	segmentCnt int
+	lockCnt    *LockCnt
 	base
 }
 
 func (s *segment) Lock(optionFuncList ...OptionFunc) error {
+	defer s.AddRLockCnt(s.lockCnt)
 	o := s.ParseOption(optionFuncList...)
 	return s.lockTable[util.GetHashIDMod(o.flag, s.segmentCnt)].Lock()
 }
 
 func (s *segment) Unlock(optionFuncList ...OptionFunc) error {
+	defer s.DecreaseLockCnt(s.lockCnt)
 	o := s.ParseOption(optionFuncList...)
 	return s.lockTable[util.GetHashIDMod(o.flag, s.segmentCnt)].Unlock()
 }
 
 func (s *segment) RLock(optionFuncList ...OptionFunc) error {
+	defer s.AddRLockCnt(s.lockCnt)
 	o := s.ParseOption(optionFuncList...)
 	return s.lockTable[util.GetHashIDMod(o.flag, s.segmentCnt)].RLock()
 }
 
 func (s *segment) RUnlock(optionFuncList ...OptionFunc) error {
+	defer s.DecreaseRLockCnt(s.lockCnt)
 	o := s.ParseOption(optionFuncList...)
 	return s.lockTable[util.GetHashIDMod(o.flag, s.segmentCnt)].RUnlock()
+}
+
+func (s *segment) GetLockCnt() *LockCnt {
+	return s.lockCnt
 }

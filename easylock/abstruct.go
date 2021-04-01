@@ -21,4 +21,6 @@ type EasyLock interface {
 	RLock(optionFuncList ...OptionFunc) error
 	// RUnlock ...
 	RUnlock(optionFuncList ...OptionFunc) error
+	// GetLockCnt 获取锁总数
+	GetLockCnt() *LockCnt
 }
