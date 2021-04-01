@@ -24,22 +24,22 @@ type lock struct {
 	sc *sync.RWMutex
 }
 
-func (l *lock) Lock(flag string) error {
+func (l *lock) Lock(optionFuncList ...OptionFunc) error {
 	l.sc.Lock()
 	return nil
 }
 
-func (l *lock) Unlock(flag string) error {
+func (l *lock) Unlock(optionFuncList ...OptionFunc) error {
 	l.sc.Unlock()
 	return nil
 }
 
-func (l *lock) RLock(flag string) error {
+func (l *lock) RLock(optionFuncList ...OptionFunc) error {
 	l.sc.RLock()
 	return nil
 }
 
-func (l *lock) RUnlock(flag string) error {
+func (l *lock) RUnlock(optionFuncList ...OptionFunc) error {
 	l.sc.Unlock()
 	return nil
 }
