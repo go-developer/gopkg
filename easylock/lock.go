@@ -44,14 +44,13 @@ func (l *lock) Unlock(optionFuncList ...OptionFunc) error {
 
 func (l *lock) RLock(optionFuncList ...OptionFunc) error {
 	defer l.AddRLockCnt(l.lockCnt)
-
 	l.sc.RLock()
 	return nil
 }
 
 func (l *lock) RUnlock(optionFuncList ...OptionFunc) error {
 	defer l.DecreaseRLockCnt(l.lockCnt)
-	l.sc.Unlock()
+	l.sc.RUnlock()
 	return nil
 }
 

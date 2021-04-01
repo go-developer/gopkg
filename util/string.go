@@ -43,6 +43,6 @@ func GenRandomString(source string, length uint) string {
 // Date : 6:01 下午 2021/3/9
 func Md5(str string) string {
 	h := md5.New()
-	h.Write([]byte(str))
+	_, _ = h.Write([]byte(str))
 	return hex.EncodeToString(h.Sum(nil))
 }
