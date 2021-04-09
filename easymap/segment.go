@@ -25,7 +25,7 @@ func NewSegment(segmentCnt int, withLock bool) (EasyMap, error) {
 	}
 	em.dataTable = make([]EasyMap, segmentCnt)
 	for i := 0; i < segmentCnt; i++ {
-		em.dataTable[0] = NewNormal(withLock)
+		em.dataTable[i] = NewNormal(withLock)
 	}
 	return em, nil
 }
