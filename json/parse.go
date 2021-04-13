@@ -52,17 +52,23 @@ func (pjt *ParseJSONTree) Parse(pathList []string) (*DynamicJSON, error) {
 	source := string(byteData)
 	for _, path := range pathList {
 		// 为数组的处理
-		pathArr := strings.Split(path, "[]")
-		for idx, item := range pathArr {
-			val := gjson.Get(source, item)
-			isComplexType := val.IsArray()
-			if len(pathArr)-1 == idx {
-				// 当前是最后一项,说明不是数组
-				if isComplexType {
-					fmt.Println("这是一个数组")
+		pathArr := strings.Split(path, ".[].")
+		val := gjson.Get(source, pathArr[0])
+		isComplexType := val.IsArray() || val.IsObject()
+		if len(pathArr) == 1 {
+			result.SetValue(pathArr[0], val.Raw, isComplexType)
+			continue
+		}
+		// 支持list再抽取一层,处于性能考虑,这么限制,不做递归无限深度处理
+		// 还能继续抽取,就认为是 []map[string]interface{}
+		ketList := strings.Split(pathArr[1], "|")
+		for idx, item := range val.Array() {
+			data := item.Map()
+			for _, key := range ketList {
+				if v, exist := data[key]; exist {
+					result.SetValue(fmt.Sprintf(pathArr[0]+".[%d]."+key, idx), data[key].Raw, v.IsObject() || v.IsArray())
 				}
-				result.SetValue(item, val.Raw, isComplexType)
-				continue
+				// 结果集中不存在对应key,丢弃
 			}
 		}
 	}

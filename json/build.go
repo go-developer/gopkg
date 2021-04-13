@@ -37,6 +37,7 @@ type JSONode struct {
 	IsIndexNode      bool        // 是否是slice的索引节点
 	Sort             int         // 此属性用于　slice解析,保证最终排序是对的
 	IsComplex        bool        // 是否为复杂数据类型
+	IsString         bool        // 是否为字符串
 }
 
 // NewDynamicJSON 获取JSON实例
@@ -129,24 +130,13 @@ func (dj *DynamicJSON) buildTpl(root *JSONode, tplList *[]string, valList *[]int
 			*tplList = append(*tplList, startSymbol)
 		} else {
 			*tplList = append(*tplList, valFormat)
-			switch val := root.Value.(type) {
-			case string:
-				*valList = append(*valList, val)
-			default:
-				*valList = append(*valList, root.Value)
-			}
+			*valList = append(*valList, root.Value)
 			return tplList, valList
 		}
 	} else {
 		if len(root.Child) == 0 {
-			switch val := root.Value.(type) {
-			case string:
-				*valList = append(*valList, val)
-				*tplList = append(*tplList, dj.getValFormat(root))
-			default:
-				*tplList = append(*tplList, dj.getValFormat(root))
-				*valList = append(*valList, root.Value)
-			}
+			*tplList = append(*tplList, valFormat)
+			*valList = append(*valList, root.Value)
 		} else {
 			*tplList = append(*tplList, startSymbol)
 		}
@@ -171,6 +161,7 @@ func (dj *DynamicJSON) getValFormat(root *JSONode) string {
 			// 还有自节点的情况下,不需要占位符
 			return ""
 		}
+
 		if root.IsHasLastBrother {
 			return key + ":%v,"
 		}
@@ -181,24 +172,11 @@ func (dj *DynamicJSON) getValFormat(root *JSONode) string {
 		// 是list的索引节点,且有子节点
 		return ""
 	}
-	switch root.Value.(type) {
-	case string:
-		if !root.IsComplex {
-			if root.IsHasLastBrother {
-				return "\"%v\","
-			}
-			return "\"%v\""
-		}
-		if root.IsHasLastBrother {
-			return "%v,"
-		}
-		return "%v"
-	default:
-		if root.IsHasLastBrother {
-			return "%v,"
-		}
-		return "%v"
+	if root.IsHasLastBrother {
+		return "%v,"
 	}
+	return "%v"
+
 }
 
 // getStartSymbol 计算起始的符号
@@ -311,6 +289,13 @@ func (dj *DynamicJSON) createNode(parent *JSONode, key string, value interface{}
 		IsRoot:           false,
 		IsHasLastBrother: false,
 		IsComplex:        isComplexType,
+		IsString:         false,
+	}
+	if !isComplexType {
+		switch value.(type) {
+		case string:
+			newNode.IsString = true
+		}
 	}
 	parent.IsSlice, newNode.Sort = dj.extraSliceIndex(key)
 	if parent.IsSlice {
