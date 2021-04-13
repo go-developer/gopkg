@@ -36,6 +36,7 @@ type JSONode struct {
 	IsSlice          bool        // 是否是list
 	IsIndexNode      bool        // 是否是slice的索引节点
 	Sort             int         // 此属性用于　slice解析,保证最终排序是对的
+	IsComplex        bool        // 是否为复杂数据类型
 }
 
 // NewDynamicJSON 获取JSON实例
@@ -75,7 +76,7 @@ type DynamicJSON struct {
 // Author : go_developer@163.com<张德满>
 //
 // Date : 10:45 下午 2021/3/10
-func (dj *DynamicJSON) SetValue(path string, value interface{}) {
+func (dj *DynamicJSON) SetValue(path string, value interface{}, isComplexType bool) {
 	pathList := strings.Split(path, PathSplit)
 	searchRoot := dj.root
 	parent := dj.root
@@ -89,7 +90,7 @@ func (dj *DynamicJSON) SetValue(path string, value interface{}) {
 			if keyIndex == len(pathList)-1 {
 				val = value
 			}
-			_ = dj.createNode(parent, key, val)
+			_ = dj.createNode(parent, key, val, isComplexType)
 			if len(parent.Child) > 0 {
 				searchRoot = parent.Child[len(parent.Child)-1]
 				parent = parent.Child[len(parent.Child)-1]
@@ -130,7 +131,7 @@ func (dj *DynamicJSON) buildTpl(root *JSONode, tplList *[]string, valList *[]int
 			*tplList = append(*tplList, valFormat)
 			switch val := root.Value.(type) {
 			case string:
-				*valList = append(*valList, "\""+val+"\"")
+				*valList = append(*valList, val)
 			default:
 				*valList = append(*valList, root.Value)
 			}
@@ -182,10 +183,16 @@ func (dj *DynamicJSON) getValFormat(root *JSONode) string {
 	}
 	switch root.Value.(type) {
 	case string:
-		if root.IsHasLastBrother {
-			return "\"%v\","
+		if !root.IsComplex {
+			if root.IsHasLastBrother {
+				return "\"%v\","
+			}
+			return "\"%v\""
 		}
-		return "\"%v\""
+		if root.IsHasLastBrother {
+			return "%v,"
+		}
+		return "%v"
 	default:
 		if root.IsHasLastBrother {
 			return "%v,"
@@ -284,7 +291,7 @@ func (dj *DynamicJSON) search(root *JSONode, key string) *JSONode {
 // Author : go_developer@163.com<张德满>
 //
 // Date : 10:57 下午 2021/3/10
-func (dj *DynamicJSON) createNode(parent *JSONode, key string, value interface{}) error {
+func (dj *DynamicJSON) createNode(parent *JSONode, key string, value interface{}, isComplexType bool) error {
 	if nil == parent {
 		return errors.New("create node error : parent id nil")
 	}
@@ -303,6 +310,7 @@ func (dj *DynamicJSON) createNode(parent *JSONode, key string, value interface{}
 		Child:            make([]*JSONode, 0),
 		IsRoot:           false,
 		IsHasLastBrother: false,
+		IsComplex:        isComplexType,
 	}
 	parent.IsSlice, newNode.Sort = dj.extraSliceIndex(key)
 	if parent.IsSlice {
