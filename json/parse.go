@@ -10,6 +10,11 @@ package json
 import (
 	"encoding/json"
 	"reflect"
+	"strings"
+
+	"github.com/tidwall/gjson"
+
+	"github.com/pkg/errors"
 
 	"github.com/go-developer/gopkg/util"
 )
@@ -37,8 +42,25 @@ type ParseJSONTree struct {
 // Author : go_developer@163.com<张德满>
 //
 // Date : 10:44 下午 2021/3/14
-func (pjt *ParseJSONTree) Parse() (*JSONode, error) {
-	return nil, nil
+func (pjt *ParseJSONTree) Parse(pathList []string) (*DynamicJSON, error) {
+	if !pjt.isLegalData() {
+		return nil, errors.New("非法的数据,无法转换成json")
+	}
+	result := NewDynamicJSON()
+	byteData, _ := json.Marshal(pjt.data)
+	source := string(byteData)
+	for _, path := range pathList {
+		// 为数组的处理
+		pathArr := strings.Split(path, "[]")
+		for idx, item := range pathArr {
+			if len(pathArr)-1 == idx {
+				// 当前是最后一项,说明不是数组
+				result.SetValue(item, gjson.Get(source, item).Raw)
+				continue
+			}
+		}
+	}
+	return result, nil
 }
 
 // isLegalData 判断是否能转换成json结构, 只有slice/map/struct/能转换成slice或map的[]byte是合法的

@@ -288,7 +288,7 @@ func (dj *DynamicJSON) createNode(parent *JSONode, key string, value interface{}
 	if nil == parent {
 		return errors.New("create node error : parent id nil")
 	}
-	_ = dj.lock.Lock("")
+	_ = dj.lock.Lock()
 	if parent.Child == nil {
 		parent.Child = make([]*JSONode, 0)
 	}
@@ -310,7 +310,7 @@ func (dj *DynamicJSON) createNode(parent *JSONode, key string, value interface{}
 	}
 	parent.Child = append(parent.Child, newNode)
 	dj.nodeCnt++
-	_ = dj.lock.Unlock("")
+	_ = dj.lock.Unlock()
 	return nil
 }
 

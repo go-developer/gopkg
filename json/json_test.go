@@ -48,3 +48,23 @@ func TestJSON(t *testing.T) {
 func TestType(t *testing.T) {
 
 }
+
+// TestSelect 测试动态选择字段
+//
+// Author : go_developer@163.com<张德满>
+//
+// Date : 9:47 下午 2021/4/13
+func TestSelect(t *testing.T) {
+	source := map[string]interface{}{
+		"name": "zhangdeman",
+		"extra": map[string]interface{}{
+			"age":    18,
+			"height": 180,
+			"slice":  []int{1, 2, 3},
+		},
+		"slice": []int{1, 2, 3},
+	}
+	pathList := []string{"name", "extra.age", "slice"}
+	r, e := NewParseJSONTree(source).Parse(pathList)
+	fmt.Println(r.String(), e)
+}
