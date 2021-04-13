@@ -55,13 +55,13 @@ func (pjt *ParseJSONTree) Parse(pathList []string) (*DynamicJSON, error) {
 		pathArr := strings.Split(path, "[]")
 		for idx, item := range pathArr {
 			val := gjson.Get(source, item)
-			isComplextType := val.IsArray()
+			isComplexType := val.IsArray()
 			if len(pathArr)-1 == idx {
 				// 当前是最后一项,说明不是数组
-				if isComplextType {
+				if isComplexType {
 					fmt.Println("这是一个数组")
 				}
-				result.SetValue(item, val.Raw, isComplextType)
+				result.SetValue(item, val.Raw, isComplexType)
 				continue
 			}
 		}

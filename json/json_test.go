@@ -63,8 +63,9 @@ func TestSelect(t *testing.T) {
 			"slice":  []int{1, 2, 3},
 		},
 		"slice": []int{1, 2, 3},
+		"map":   map[string]interface{}{"a": 1, "b": 2, "c": 4},
 	}
-	pathList := []string{"name", "extra.age", "slice"}
+	pathList := []string{"name", "extra.age", "slice", "map"}
 	r, e := NewParseJSONTree(source).Parse(pathList)
 	fmt.Println(r.String(), e)
 }
