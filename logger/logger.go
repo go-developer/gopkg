@@ -76,6 +76,38 @@ func NewLogger(loggerLevel zapcore.Level, splitConfig *RotateLogConfig, optionFu
 	return log, nil
 }
 
+// NewConsoleLogger 获取控制台输出的日志实例
+//
+// Author : go_developer@163.com<张德满>
+//
+// Date : 8:22 下午 2021/4/17
+func NewConsoleLogger(loggerLevel zapcore.Level, optionFunc ...SetLoggerOptionFunc) (*zap.Logger, error) {
+	o := &OptionLogger{}
+
+	for _, f := range optionFunc {
+		f(o)
+	}
+	if nil == o.Encoder {
+		o.Encoder = GetEncoder()
+	}
+	loggerLevelDeal := zap.LevelEnablerFunc(func(lvl zapcore.Level) bool {
+		return lvl >= loggerLevel
+	})
+	fileHandlerList := []zapcore.Core{
+		zapcore.NewCore(o.Encoder, zapcore.AddSync(os.Stdout), loggerLevelDeal),
+	}
+	// 最后创建具体的Logger
+	core := zapcore.NewTee(fileHandlerList...)
+
+	// 需要传入 zap.AddCaller() 才会显示打日志点的文件名和行数, 跳过一行可以直接显示业务代码行号,否则显示日志包行号
+	logConfList := make([]zap.Option, 0)
+	if o.WithCaller {
+		logConfList = append(logConfList, zap.AddCaller(), zap.AddCallerSkip(o.WithCallerSkip))
+	}
+	log := zap.New(core, logConfList...)
+	return log, nil
+}
+
 type Logger struct {
 	splitConfig *RotateLogConfig
 	encoder     zapcore.Encoder
